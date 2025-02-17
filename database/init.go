@@ -1,34 +1,36 @@
 package database
 
 import (
+	"backend/common"
 	"context"
 	_ "fmt"
 	"log"
-	"os"
 
-	"go.mongodb.org/mongo-driver/v2/bson"
+	utils "github.com/ItsMeSamey/go_utils"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-func Init() {
+var DB *mongo.Database
+var UserDB Collection[User]
 
-	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	client, err := mongo.Connect(options.Client().ApplyURI(os.Getenv("MONGODB_URI")).SetServerAPIOptions(serverAPI))
+func init() {
+	
+	client, err := mongo.Connect(options.Client().ApplyURI(common.Cfg.MongoURI))
 
 	if err != nil {
-		panic(err)
+		log.Fatalln(utils.WithStack(err))
 	}
-	defer func() {
-		if err = client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
 
 	// Send a ping to confirm a successful connection
-	var result bson.M
-	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{"ping", 1}}).Decode(&result); err != nil {
+	if err := client.Ping(context.Background(), nil); err != nil {
+		log.Fatalln(utils.WithStack(err))
 		panic(err)
 	}
+
 	log.Println("Pinged your deployment. You successfully connected to MongoDB!")
+
+	DB = client.Database(common.Cfg.DBName)
+	UserDB = Collection[User]{DB.Collection("users")}
+	log.Println(UserDB.Collection.Name())
 }

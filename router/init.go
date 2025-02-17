@@ -12,6 +12,7 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 	fiberRecover "github.com/gofiber/fiber/v3/middleware/recover"
 )
 
@@ -33,14 +34,14 @@ func Init() {
 		JSONDecoder:        json.Unmarshal,
 	})
 
-	// Middleware
 	app.Use(cors.New())
-	app.Use(fiberRecover.New(fiberRecover.Config{EnableStackTrace: common.IsDebug}))
+	app.Use(fiberRecover.New(fiberRecover.Config{EnableStackTrace: true}))
+	app.Use(logger.New())
+	log.Println("Default logging enabled")
 
-	// Add routes
 	addMailRoutes(app)
+	addAuthRoutes(app)
 
-	// Start the server
 	log.Fatal(
 		app.Listen("127.0.0.1:8080", fiber.ListenConfig{
 			EnablePrintRoutes: true,

@@ -2,12 +2,10 @@ package handlers
 
 import (
 	"backend/common"
-	"fmt"
+	"log"
 
-	utils "github.com/ItsMeSamey/go_utils"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gofiber/fiber/v3"
+	mail "github.com/xhit/go-simple-mail/v2"
 )
 
 type EmailRequest struct {
@@ -33,48 +31,36 @@ func SendMail(c fiber.Ctx) error {
 		})
 	}
 
-	// Initialize the AWS SES client
-	svc := common.NewAwsClient()
+	client := common.GetSMTPClient()
+	email := mail.NewMSG()
+	email.SetFrom(req.Sender).
+		SetSubject(req.Subject).
+		AddTo(req.Recipient).
+		SetBody(mail.TextHTML, req.Body)
+	email.SetDSN([]mail.DSN{mail.SUCCESS, mail.FAILURE}, false)
 
-	// Create the SES input
-	input := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			ToAddresses: []*string{
-				aws.String(req.Recipient),
-			},
-		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Text: &ses.Content{
-					Data:    aws.String(req.Body),
-					Charset: aws.String("UTF-8"),
-				},
-			},
-			Subject: &ses.Content{
-				Data:    aws.String(req.Subject),
-				Charset: aws.String("UTF-8"),
-			},
-		},
-		Source: aws.String(req.Sender),
-	}
-
-	// Send the email
-	result, err := svc.SendEmail(input)
-	if err != nil {
-		// Log the error and return a 500 status code
-		utils.WithStack(err)
+	if email.Error != nil {
+		log.Printf("Failed to create email: %v", email.Error)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   true,
-			"message": fmt.Sprintf("Failed to send email: %v", err),
+			"message": "Failed to create email message",
 		})
 	}
 
-	// Return the result
+	err := email.Send(client)
+	if err != nil {
+		log.Printf("Failed to send email: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   true,
+			"message": "Failed to send email",
+		})
+	}
+
+	log.Println("Email sent successfully")
 	return c.JSON(fiber.Map{
 		"error":   false,
 		"message": "Email sent successfully",
-		"result":  result,
-	})	
+	})
 }
 
 func TestHandler(c fiber.Ctx) error {
