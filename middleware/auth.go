@@ -92,8 +92,6 @@ func VerifyAPIKey() fiber.Handler {
 }
 
 func isRevoked(serialNumber string) bool {
-	// Replace this with actual logic to check if the key is revoked
-	// For example, query a database to see if the serial number is in a revoked list
 	client, exists, _ := database.ClientDB.GetExists(bson.M{"serialNumber": serialNumber})
 	log.Println(exists, serialNumber)
 	if exists{

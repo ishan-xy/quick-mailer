@@ -17,13 +17,12 @@ import (
 
 func SignUp(c fiber.Ctx) error {
 	req := c.Locals("auth_request").(database.AuthRequest)
-
+	
 	_, exists, _ := database.UserDB.GetExists(bson.M{"email": req.Email})
 	if exists {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Email already registered",})
 	}
 
-	// hash password
 	hash, err := common.HashPassword(req.Password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -31,7 +30,6 @@ func SignUp(c fiber.Ctx) error {
 			"message": "Failed to hash password",
 		})
 	}
-	// create user
 	user := database.User{
 		Email:    req.Email,
 		Password: hash,
