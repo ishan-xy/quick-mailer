@@ -14,6 +14,7 @@ import (
 var DB *mongo.Database
 var UserDB Collection[User]
 var ClientDB Collection[Client]
+var SentMailDB Collection[Client]
 
 func init() {
 	
@@ -34,5 +35,6 @@ func init() {
 	DB = client.Database(common.Cfg.DBName)
 	UserDB = Collection[User]{DB.Collection("users")}
 	ClientDB = Collection[Client]{DB.Collection("clients")}
+	SentMailDB = Collection[Client]{DB.Collection("sent-mails")}
 	log.Println(UserDB.Collection.Name())
 }

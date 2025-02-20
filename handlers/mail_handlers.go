@@ -53,6 +53,16 @@ func SendMail(c fiber.Ctx) error {
 		})
 	}
 
+	email_struct := database.Email{
+		Sender: req.Sender,
+		Subject: req.Subject,
+		Recipient: req.Recipient,
+		TextBody: req.Body,
+	}
+	_, err = database.SentMailDB.InsertOne(c.Context(), email_struct)
+	if err != nil {
+		return utils.WithStack(err)
+	}
 	log.Println("Email sent successfully")
 	return c.JSON(fiber.Map{
 		"message": "Email sent successfully",
