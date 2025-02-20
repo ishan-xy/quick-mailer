@@ -28,12 +28,17 @@ func Getenv(key string) string {
 	return value
 }
 
-func GetEnvAsInt(key string, defaultValue int) (val int, err error) {
+func GetEnvAsInt(key string, defaultValue int) (val int) {
 	value, exists := os.LookupEnv(key)
 	if !exists {
-		return defaultValue, nil
+		return defaultValue
 	}
-	return strconv.Atoi(value)
+	strv, err := strconv.Atoi(value)
+	if err != nil {
+		log.Printf("Invalid value for environment variable %s: %s", key, value)
+		log.Fatalf("Error: %v", err)
+	}
+	return strv
 }
 
 func GetEnvAsBool(key string, defaultValue bool) (val bool) {

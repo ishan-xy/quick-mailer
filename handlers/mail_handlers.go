@@ -2,36 +2,33 @@ package handlers
 
 import (
 	"backend/common"
+	"backend/database"
 	"log"
 
+	utils "github.com/ItsMeSamey/go_utils"
 	"github.com/gofiber/fiber/v3"
 	mail "github.com/xhit/go-simple-mail/v2"
 )
 
-type EmailRequest struct {
-	Sender    string `json:"sender"`
-	Recipient string `json:"recipient"`
-	Subject   string `json:"subject"`
-	Body      string `json:"body"`
-}
-
 func SendMail(c fiber.Ctx) error {
-	var req EmailRequest
+	var req database.EmailRequest
 	if err := c.Bind().Body(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   true,
+			"error":   utils.WithStack(err),
 			"message": "Invalid request body",
 		})
 	}
 
 	if req.Sender == "" || req.Recipient == "" || req.Subject == "" || req.Body == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   true,
 			"message": "Sender, recipient, subject, and body are required",
 		})
 	}
 
-	client := common.GetSMTPClient()
+	client, err := common.GetSMTPClient()
+	if err != nil {
+		return utils.WithStack(err)
+	}
 	email := mail.NewMSG()
 	email.SetFrom(req.Sender).
 		SetSubject(req.Subject).
@@ -42,29 +39,22 @@ func SendMail(c fiber.Ctx) error {
 	if email.Error != nil {
 		log.Printf("Failed to create email: %v", email.Error)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   true,
+			"error":   utils.WithStack(email.Error),
 			"message": "Failed to create email message",
 		})
 	}
 
-	err := email.Send(client)
+	err = email.Send(client)
 	if err != nil {
 		log.Printf("Failed to send email: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   true,
+			"error":   utils.WithStack(err),
 			"message": "Failed to send email",
 		})
 	}
 
 	log.Println("Email sent successfully")
 	return c.JSON(fiber.Map{
-		"error":   false,
 		"message": "Email sent successfully",
-	})
-}
-
-func TestHandler(c fiber.Ctx) error {
-	return c.JSON(fiber.Map{
-		"message": "Hello, World!",
 	})
 }

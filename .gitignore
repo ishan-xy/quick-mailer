@@ -2,3 +2,5 @@
 *.py
 *.env
 tmp/
+tmp/*
+uploads/*

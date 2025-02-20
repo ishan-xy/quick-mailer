@@ -3,24 +3,19 @@ package common
 import (
 	"crypto/tls"
 	"log"
-	"strconv"
 	"time"
 
 	utils "github.com/ItsMeSamey/go_utils"
 	mail "github.com/xhit/go-simple-mail/v2"
 )
 
-func GetSMTPClient() *mail.SMTPClient {
+func GetSMTPClient() (*mail.SMTPClient, error) {
 	server := mail.NewSMTPClient()
 
-	server.Host = Getenv("SMTP_HOST")
-	port, err := strconv.Atoi(Getenv("SMTP_PORT"))
-	if err != nil {
-		log.Fatalf("Invalid SMTP_PORT: %v", err)
-	}
-	server.Port = port
-	server.Username = Getenv("SMTP_USERNAME")
-	server.Password = Getenv("SMTP_PASSWORD")
+	server.Host = Cfg.SMTPHost
+	server.Port = Cfg.SMTPPort
+	server.Username = Cfg.SMTPUsername
+	server.Password = Cfg.SMTPPassword
 	server.Encryption = mail.EncryptionSTARTTLS
 	server.KeepAlive = false
 	server.ConnectTimeout = 10 * time.Second
@@ -29,9 +24,8 @@ func GetSMTPClient() *mail.SMTPClient {
 
 	client, err := server.Connect()
 	if err != nil {
-		utils.WithStack(err)
-		log.Fatalf("Failed to connect to SMTP server: %v", err)
+		log.Printf("Failed to connect to SMTP server: %v", utils.WithStack(err))
 	}
 
-	return client
+	return client ,err
 }

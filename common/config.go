@@ -12,6 +12,12 @@ type Config struct {
 	JWTExpiration time.Duration
 	CookieName 	string
 	
+	SMTPHost     string
+	SMTPPort     int
+	SMTPUsername string
+	SMTPPassword string
+
+	API_Secret 	 string
 }
 
 func LoadConfig() (*Config, error) {
@@ -23,5 +29,11 @@ func LoadConfig() (*Config, error) {
 		JWTSecret:   Getenv("JWT_SECRET"),
 		JWTExpiration: time.Hour * 24,
 		CookieName:  "sessionID",
+
+		SMTPHost:     Getenv("SMTP_HOST"),
+		SMTPPort:     GetEnvAsInt("SMTP_PORT", 587),
+		SMTPUsername: Getenv("SMTP_USERNAME"),
+		SMTPPassword: Getenv("SMTP_PASSWORD"),
+		API_Secret:   Getenv("API_Secret"),
 	}, nil
 }

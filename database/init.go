@@ -13,6 +13,7 @@ import (
 
 var DB *mongo.Database
 var UserDB Collection[User]
+var ClientDB Collection[Client]
 
 func init() {
 	
@@ -32,5 +33,6 @@ func init() {
 
 	DB = client.Database(common.Cfg.DBName)
 	UserDB = Collection[User]{DB.Collection("users")}
+	ClientDB = Collection[Client]{DB.Collection("clients")}
 	log.Println(UserDB.Collection.Name())
 }

@@ -16,10 +16,25 @@ type User struct {
 	Password []byte `json:"password" bson:"password"`
 }
 
-type AuthRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+type Email struct {
+	ID         bson.ObjectID `bson:"_id,omitempty"`
+	Sender     string        `json:"sender" bson:"sender"`
+	Recipient  string        `json:"recipient" bson:"recipient"`
+	Subject    string        `json:"subject" bson:"subject"`
+	TextBody   string        `json:"text-body" bson:"text-body"`
+	HTMLBody   string        `json:"html-body" bson:"html-body"`
+	Recipients []string      `json:"recipients" bson:"recipients"`
 }
+
+type Client struct {
+	ID           bson.ObjectID `bson:"_id,omitempty"`
+	Name         string        `json:"name" bson:"name"`
+	Email        string        `json:"email" bson:"email"`
+	SerialNumber string        `json:"serialNumber" bson:"serialNumber"`
+	ClientSecret string        `json:"clientSecret" bson:"clientSecret"`
+	IsRevoked    bool          `json:"isRevoked" bson:"isRevoked"`
+}
+
 
 type Collection[T any] struct {
 	*mongo.Collection
